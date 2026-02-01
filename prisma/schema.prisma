@@ -1,0 +1,195 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum TabStatus {
+  open
+  closed
+}
+
+enum TabCategory {
+  Groceries
+  FoodDelivery
+  Utilities
+  Rent
+  Other
+}
+
+enum RuleType {
+  merchant
+  recurring
+}
+
+enum TxType {
+  charge
+  refund
+  payment
+}
+
+enum ShareStatus {
+  pending
+  paid
+}
+
+model User {
+  id        String            @id @default(cuid())
+  email     String            @unique
+  password  String
+  createdAt DateTime          @default(now())
+  tabs      Tab[]
+  rules     Rule[]
+  series    ExpensePoint[]
+  payday    PaydaySettings?
+  preferences UserPreference?
+  household Household?
+  incomeSchedules IncomeSchedule[]
+}
+
+model Tab {
+  id            String           @id @default(cuid())
+  userId        String
+  name          String
+  merchant      String
+  category      TabCategory
+  dueDay        Int
+  limit         Float
+  currentAmount Float
+  status        TabStatus        @default(open)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  user          User             @relation(fields: [userId], references: [id])
+  transactions  TabTransaction[]
+  shares        TabShare[]
+}
+
+model TabTransaction {
+  id         String      @id @default(cuid())
+  tabId      String
+  date       DateTime
+  merchant   String
+  memo       String
+  amount     Float
+  category   TabCategory
+  receiptUrl String?
+  type       TxType      @default(charge)
+  createdAt  DateTime    @default(now())
+  tab        Tab         @relation(fields: [tabId], references: [id])
+  tags       TransactionTag[]
+}
+
+model ExpensePoint {
+  id        String   @id @default(cuid())
+  userId    String
+  month     String
+  amount    Float
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Rule {
+  id             String       @id @default(cuid())
+  userId         String
+  type           RuleType
+  merchant       String?
+  title          String?
+  category       TabCategory
+  dueDay         Int?
+  amount         Float?
+  mustPay        Boolean      @default(false)
+  rangeLow       Float?
+  rangeHigh      Float?
+  createdAt      DateTime     @default(now())
+  user           User         @relation(fields: [userId], references: [id])
+}
+
+model PaydaySettings {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  salaryDay        Int
+  currentBalance   Float
+  buffer           Float
+  mustPayCategories TabCategory[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id])
+}
+
+model UserPreference {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  dashboardLayout String
+  currency        String
+  location        String
+  theme           String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id])
+}
+
+model Household {
+  id        String            @id @default(cuid())
+  ownerId   String            @unique
+  name      String
+  createdAt DateTime          @default(now())
+  owner     User              @relation(fields: [ownerId], references: [id])
+  members   HouseholdMember[]
+}
+
+model HouseholdMember {
+  id          String   @id @default(cuid())
+  householdId String
+  name        String
+  email       String?
+  shareDefault Float?
+  createdAt   DateTime @default(now())
+  household   Household @relation(fields: [householdId], references: [id])
+  shares      TabShare[]
+}
+
+model TabShare {
+  id          String       @id @default(cuid())
+  tabId       String
+  memberId    String
+  sharePercent Float
+  shareAmount Float?
+  paidAmount  Float        @default(0)
+  status      ShareStatus  @default(pending)
+  createdAt   DateTime     @default(now())
+  tab         Tab          @relation(fields: [tabId], references: [id])
+  member      HouseholdMember @relation(fields: [memberId], references: [id])
+}
+
+model IncomeSchedule {
+  id         String   @id @default(cuid())
+  userId     String
+  label      String
+  dayOfMonth Int
+  amount     Float
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
+}
+
+model TransactionTag {
+  id            String          @id @default(cuid())
+  transactionId String
+  label         String
+  color         String?
+  createdAt     DateTime        @default(now())
+  transaction   TabTransaction  @relation(fields: [transactionId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  message   String
+  createdAt DateTime @default(now())
+  readAt    DateTime?
+  user      User     @relation(fields: [userId], references: [id])
+}
