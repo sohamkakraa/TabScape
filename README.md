@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TabScape
 
-## Getting Started
+Prototype dashboard for tracking tabs, forecasting obligations, and planning pay cycles.
 
-First, run the development server:
+## Highlights
+- Tabs, transactions, receipts, tags, rules, and forecasts
+- Shared expenses with roommate splits + paid/partial tracking
+- Payday plan with envelopes, buffers, and multiple income schedules
+- Preferences for layout, currency, location, and theme
+- Notifications for limit warnings
 
+## Tech
+- Next.js App Router
+- Prisma + PostgreSQL
+
+## Local Setup
+1) Install dependencies:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2) Create a local Postgres database:
+```bash
+createdb tabscape
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3) Set environment variables:
+```bash
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/tabscape?schema=public"
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4) Run migrations and generate Prisma client:
+```bash
+npx prisma migrate dev --name init
+npx prisma generate
+```
 
-## Learn More
+5) Start the dev server:
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+6) Seed demo data:
+- Visit `/api/seed` once in the browser.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Demo Login
+- Email: `demo@tabscape.local`
+- Password: `demo123`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Notes
+- This is a prototype. Auth is demo-only and not secure.
+- Data lives in your local Postgres database.
